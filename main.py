@@ -97,7 +97,7 @@ class Ui_MainWindow(object):
 
     def set_meal(self):
         list_widgets = [self.listWidget, self.listWidget_2, self.listWidget_3]
-        date = self.get_date().replace("-", '')
+        date = self.get_date().replace("-", "")
         for i in range(1, 4):
             url = "https://open.neis.go.kr/hub/mealServiceDietInfo?"  # 기본 URL
             url += "ATPT_OFCDC_SC_CODE=F10&"  # 교육청코드
@@ -105,12 +105,23 @@ class Ui_MainWindow(object):
             url += "MMEAL_SC_CODE=" + str(i) + "&"  # 1, 2, 3 : 아침, 점심, 저녁
             url += "MLSV_YMD=" + date  # 날짜
 
-            res = requests.get(url).text
-            soup = bs(res, "lxml")
+            response = requests.get(url).text
+            soup = bs(response, "lxml")
 
             list_widgets[i - 1].clear()
-            list_widgets[i - 1].addItems(re.sub("[<>_/&;]", "", re.sub(r"[a-zA-Z]", "",
-                                                                       str(soup.find("ddish_nm")).replace("<br/>", "\n"))).replace("]", '').split("\n"))
+
+            if soup.find("code").get_text() == "INFO-000":  # 급식 데이터가 있을 때
+
+                for linebreak in soup.find_all("br"):
+                    linebreak.replace_with("\n")
+                result = soup.find("ddish_nm").get_text()
+                result = re.sub("[/>\]]+", "", result)
+
+                list_widgets[i - 1].addItems(result.split("\n"))
+
+            else:  # 급식 데이터가 없을 때
+
+                list_widgets[i - 1].addItem("데이터 없음")
 
     def get_ymd(self, date):
         return int(date[:4]), int(date[5:7]), int(date[8:])
@@ -118,6 +129,7 @@ class Ui_MainWindow(object):
 
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
