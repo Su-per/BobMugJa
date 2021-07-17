@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from bs4 import BeautifulSoup as bs
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from bs4 import BeautifulSoup as bs
 from datetime import datetime, date, timedelta
 import requests
 import calendar
@@ -15,7 +17,7 @@ class Ui_MainWindow(object):
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(970, 599)
+        MainWindow.resize(970, 644)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
@@ -49,6 +51,9 @@ class Ui_MainWindow(object):
         self.label.setFont(font)
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setObjectName("label")
+        self.pushButton_3 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_3.setGeometry(QtCore.QRect(800, 570, 141, 41))
+        self.pushButton_3.setObjectName("pushButton_3")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 970, 26))
@@ -57,12 +62,19 @@ class Ui_MainWindow(object):
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
+        self.statusbar.showMessage("광주소프트웨어마이스터고등학교")
 
-        self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        self.dialog = QDialog()
+        self.dialog.setWindowTitle("학교 선택")
+        self.dialog.setWindowModality(Qt.ApplicationModal)
+        self.dialog.resize(600, 360)
 
         self.pushButton.clicked.connect(self.set_day_yesterday)
         self.pushButton_2.clicked.connect(self.set_day_tomorrow)
+        self.pushButton_3.clicked.connect(self.select_school)
+
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -73,8 +85,34 @@ class Ui_MainWindow(object):
         self.groupBox_2.setTitle(_translate("MainWindow", "중식"))
         self.groupBox_3.setTitle(_translate("MainWindow", "석식"))
         self.label.setText(_translate("MainWindow", "날짜"))
+        self.pushButton_3.setText(_translate("MainWindow", "학교 선택"))
         self.set_date()
         self.set_meal()
+
+    def select_school(self):
+        pushButton = QtWidgets.QPushButton("학교 검색", self.dialog)
+        pushButton.setGeometry(QtCore.QRect(440, 20, 121, 51))
+        pushButton.setObjectName("pushButton")
+        lineEdit = QtWidgets.QLineEdit(self.dialog)
+        lineEdit.setGeometry(QtCore.QRect(20, 20, 411, 51))
+        lineEdit.setObjectName("lineEdit")
+        listWidget = QtWidgets.QListWidget(self.dialog)
+        listWidget.setGeometry(QtCore.QRect(20, 80, 411, 192))
+        listWidget.setObjectName("listWidget")
+        pushButton_2 = QtWidgets.QPushButton("학교 선택", self.dialog)
+        pushButton_2.setGeometry(QtCore.QRect(440, 80, 121, 41))
+        pushButton_2.setObjectName("pushButton_2")
+
+        pushButton.clicked.connect(self.search_school)
+        pushButton.clicked.connect(self.selected_school)
+
+        self.dialog.show()
+
+    def search_school(self):
+        pass
+
+    def selected_school(self):
+        pass
 
     def set_day_yesterday(self):
         self.yesmorrow -= 1
@@ -99,6 +137,7 @@ class Ui_MainWindow(object):
         list_widgets = [self.listWidget, self.listWidget_2, self.listWidget_3]
         date = self.get_date().replace("-", "")
         for i in range(1, 4):
+
             url = "https://open.neis.go.kr/hub/mealServiceDietInfo?"  # 기본 URL
             url += "ATPT_OFCDC_SC_CODE=F10&"  # 교육청코드
             url += "SD_SCHUL_CODE=7380292&"  # 학교코드
