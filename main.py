@@ -12,6 +12,9 @@ import re
 
 class Ui_MainWindow(object):
 
+    urll = "https://open.neis.go.kr/hub/schoolInfo?SCHUL_NM=광주소프트웨어마이스터고등학교"
+    ATPT_OFCDC_SC_CODE = "F10" #교육청 코드
+    SD_SCHUL_CODE = "7380292" #학교 코드
     yesmorrow: int = 0  # 내일이면 +1, 어제면 -1
     weekday_list = [" (월)", " (화)", " (수)", " (목)", " (금)", " (토)", " (일)"]
 
@@ -90,21 +93,22 @@ class Ui_MainWindow(object):
         self.set_meal()
 
     def select_school(self):
-        pushButton = QtWidgets.QPushButton("학교 검색", self.dialog)
-        pushButton.setGeometry(QtCore.QRect(440, 20, 121, 51))
-        pushButton.setObjectName("pushButton")
-        lineEdit = QtWidgets.QLineEdit(self.dialog)
-        lineEdit.setGeometry(QtCore.QRect(20, 20, 411, 51))
-        lineEdit.setObjectName("lineEdit")
-        listWidget = QtWidgets.QListWidget(self.dialog)
-        listWidget.setGeometry(QtCore.QRect(20, 80, 411, 192))
-        listWidget.setObjectName("listWidget")
-        pushButton_2 = QtWidgets.QPushButton("학교 선택", self.dialog)
-        pushButton_2.setGeometry(QtCore.QRect(440, 80, 121, 41))
-        pushButton_2.setObjectName("pushButton_2")
+        self.pushButton_search = QtWidgets.QPushButton("학교 검색", self.dialog)
+        self.pushButton_search.setGeometry(QtCore.QRect(440, 20, 121, 51))
+        self.pushButton_search.setObjectName("pushButton")
+        self.lineEdit_search = QtWidgets.QLineEdit(self.dialog)
+        self.lineEdit_search.setGeometry(QtCore.QRect(20, 20, 411, 51))
+        self.lineEdit_search.setObjectName("lineEdit")
+        self.listWidget_search = QtWidgets.QListWidget(self.dialog)
+        self.listWidget_search.setGeometry(QtCore.QRect(20, 80, 411, 192))
+        self.listWidget_search.setObjectName("listWidget")
+        self.pushButton_2_search = QtWidgets.QPushButton("학교 선택", self.dialog)
+        self.pushButton_2_search.setGeometry(QtCore.QRect(440, 80, 121, 41))
+        self.pushButton_2_search.setObjectName("pushButton_2")
 
-        pushButton.clicked.connect(self.search_school)
-        pushButton.clicked.connect(self.selected_school)
+        self.pushButton_search.clicked.connect(self.search_school)
+        self.pushButton_search.clicked.connect(self.selected_school)
+        self.lineEdit_search.textChanged().connect(self.get_school_list)
 
         self.dialog.show()
 
@@ -113,6 +117,14 @@ class Ui_MainWindow(object):
 
     def selected_school(self):
         pass
+
+    def get_school_list(self):
+        url = "https://open.neis.go.kr/hub/schoolInfo?SCHUL_NM="
+        self.listWidget_search.clear()
+        response = requests.get(url + self.lineEdit_search.getText()).text
+        soup = bs(response, "lxml")
+        res = soup.find_all("SCHUL_NM")
+        print(res)
 
     def set_day_yesterday(self):
         self.yesmorrow -= 1
@@ -139,8 +151,8 @@ class Ui_MainWindow(object):
         for i in range(1, 4):
 
             url = "https://open.neis.go.kr/hub/mealServiceDietInfo?"  # 기본 URL
-            url += "ATPT_OFCDC_SC_CODE=F10&"  # 교육청코드
-            url += "SD_SCHUL_CODE=7380292&"  # 학교코드
+            url += "ATPT_OFCDC_SC_CODE=" + self.ATPT_OFCDC_SC_CODE + "&"  # 교육청코드
+            url += "SD_SCHUL_CODE=" + self.SD_SCHUL_CODE + "&"  # 학교코드
             url += "MMEAL_SC_CODE=" + str(i) + "&"  # 1, 2, 3 : 아침, 점심, 저녁
             url += "MLSV_YMD=" + date  # 날짜
 
